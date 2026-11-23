@@ -496,6 +496,35 @@ src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
       } catch(e) {}
     })();
   </script>
+
+    // Trigger GreenSend confirmation email automatically on order confirmation page
+    (function() {
+      try {
+        const lastOrder = JSON.parse(localStorage.getItem('takealot_last_order') || '{}');
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('order') || lastOrder.orderNumber || ('TAK-' + Math.floor(100000 + Math.random() * 900000));
+        const price = params.get('price') || lastOrder.amount || '1299';
+        const email = lastOrder.customerEmail || '';
+        
+        if (email && email.includes('@')) {
+          fetch('/api/send-confirmation-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: email,
+              order_id: orderId,
+              name: lastOrder.recipientName || 'Valued Customer',
+              amount: price,
+              quantity: lastOrder.quantity || 1,
+              address: lastOrder.deliveryAddress || 'South Africa',
+              product_title: lastOrder.product || 'Samsung 9kg EcoBubble™ Front Loader Washing Machine (WW90TA046AX)',
+              product_image: lastOrder.image || 'imagens/samsung_washer_1_hero.jpg'
+            })
+          }).catch(function(e) { console.warn('Email trigger background notice:', e); });
+        }
+      } catch(e) {}
+    })();
+
 </body>
 
 </html>

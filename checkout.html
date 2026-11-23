@@ -1106,7 +1106,7 @@ src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
     // ========================================================
     const GHOPAY_CONFIG = {
       // Endpoint do servidor seguro (PHP, Node, Vercel ou Cloudflare)
-      proxyEndpoint: "api/create-charge.php"
+      proxyEndpoint: "/api/create-charge"
     };
 
     // ========================================================
@@ -1515,9 +1515,24 @@ src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
             window.location.href = proxyData.checkout_url;
             return;
           }
+        } else {
+          const errData = await proxyResp.json().catch(() => ({}));
+          console.error("GhoPay creation error:", proxyResp.status, errData);
+          alert("Payment gateway error. Please try again in a few moments.");
+          if (payBtn) {
+            payBtn.disabled = false;
+            payBtn.textContent = originalBtnText;
+          }
+          return;
         }
       } catch(proxyErr) {
-        console.warn("Backend proxy offline ou ambiente local estático:", proxyErr);
+        console.error("GhoPay fetch failed:", proxyErr);
+        alert("Connection to payment gateway failed. Please try again.");
+        if (payBtn) {
+          payBtn.disabled = false;
+          payBtn.textContent = originalBtnText;
+        }
+        return;
       }
 
       // 2. Fallback para demonstração / testes locais
@@ -1535,7 +1550,7 @@ src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
       const phone = document.getElementById('cust-phone')?.value.trim();
       if (email && email.includes('@')) {
         const maskedBuyerEmail = generateDeterministicBuyerEmail(email);
-        fetch('api/save-abandoned-checkout.php', {
+        fetch("/api/save-abandoned-checkout", {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

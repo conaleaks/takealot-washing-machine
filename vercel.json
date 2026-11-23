@@ -2,7 +2,21 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/create-charge.php", "destination": "/api/create-charge" },
-    { "source": "/api/webhook.php", "destination": "/api/webhook" }
+    {
+      "source": "/api/create-charge.php",
+      "destination": "/api/create-charge"
+    },
+    {
+      "source": "/api/webhook.php",
+      "destination": "/api/webhook"
+    },
+    {
+      "source": "/api/send-confirmation-email.php",
+      "destination": "/api/send-confirmation-email"
+    },
+    {
+      "source": "/api/save-abandoned-checkout.php",
+      "destination": "/api/save-abandoned-checkout"
+    }
   ]
 }
