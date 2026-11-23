@@ -1,0 +1,5 @@
+# Protecao de arquivos de configuracao e chaves de ambiente
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

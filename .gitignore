@@ -1,0 +1,8 @@
+.env
+.env.local
+node_modules/
+server.log
+*.pyc
+__pycache__/
+.DS_Store
+.vercel

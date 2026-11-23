@@ -1,0 +1,17 @@
+{
+  "5d41402abc4b2a76b9719d911017c592": {
+    "id": "5d41402abc4b2a76b9719d911017c592",
+    "email": "pchristiano384@gmail.com",
+    "gateway_email": "buyer_13c1836830@gmail.com",
+    "name": "Christiano",
+    "phone": "+27 82 555 9876",
+    "product_title": "Samsung 9kg EcoBubble™ Front Loader Washing Machine (WW90TA046AX)",
+    "amount": 1899,
+    "quantity": 1,
+    "created_at": "2026-11-23T06:00:00.000Z",
+    "status": "abandoned",
+    "recovery_sent": false,
+    "recovery_step": 3,
+    "last_recovery_sent": "2026-11-23T09:33:42.761Z"
+  }
+}

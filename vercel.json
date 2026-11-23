@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/api/create-charge.php", "destination": "/api/create-charge" },
+    { "source": "/api/webhook.php", "destination": "/api/webhook" }
+  ]
+}

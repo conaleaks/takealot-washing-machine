@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+<!-- UTM & Tracking Preservation System -->
+<script>
+(function() {
+  var TRACKING_KEYS = [
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+    'utm_id', 'src', 'sck', 'fbclid', 'gclid', 'ttclid'
+  ];
+
+  function getParamsFromUrl() {
+    var params = {};
+    try {
+      var search = window.location.search;
+      if (!search) return params;
+      var q = new URLSearchParams(search);
+      TRACKING_KEYS.forEach(function(k) {
+        var val = q.get(k);
+        if (val) params[k] = val;
+      });
+      q.forEach(function(val, key) {
+        if (key.indexOf('utm_') === 0 && !params[key]) {
+          params[key] = val;
+        }
+      });
+    } catch(e) {}
+    return params;
+  }
+
+  function saveParams(params) {
+    if (!params || Object.keys(params).length === 0) return;
+    try {
+      var stored = getStoredParams();
+      var merged = Object.assign({}, stored, params);
+      localStorage.setItem('takealot_utm_params', JSON.stringify(merged));
+      sessionStorage.setItem('takealot_utm_params', JSON.stringify(merged));
+      Object.keys(merged).forEach(function(k) {
+        localStorage.setItem(k, merged[k]);
+      });
+    } catch(e) {}
+  }
+
+  function getStoredParams() {
+    try {
+      var s = sessionStorage.getItem('takealot_utm_params') || localStorage.getItem('takealot_utm_params');
+      if (s) return JSON.parse(s);
+    } catch(e) {}
+    var fallback = {};
+    TRACKING_KEYS.forEach(function(k) {
+      try {
+        var v = localStorage.getItem(k);
+        if (v) fallback[k] = v;
+      } catch(e) {}
+    });
+    return fallback;
+  }
+
+  // Captura e persiste na inicialização imediata
+  var currentUrlParams = getParamsFromUrl();
+  if (Object.keys(currentUrlParams).length > 0) {
+    saveParams(currentUrlParams);
+  }
+
+  window.getPreservedUtms = function() {
+    return Object.assign({}, getStoredParams(), getParamsFromUrl());
+  };
+
+  window.getPreservedUtmQuery = function(includeLeadingAmp) {
+    var utms = window.getPreservedUtms();
+    var parts = [];
+    Object.keys(utms).forEach(function(k) {
+      parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(utms[k]));
+    });
+    if (parts.length === 0) return '';
+    var str = parts.join('&');
+    return includeLeadingAmp !== false ? ('&' + str) : str;
+  };
+
+  window.appendUtms = function(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.indexOf('javascript:') === 0 || url.indexOf('#') === 0 || url.indexOf('mailto:') === 0 || url.indexOf('tel:') === 0) {
+      return url;
+    }
+    var utms = window.getPreservedUtms();
+    if (Object.keys(utms).length === 0) return url;
+
+    try {
+      var hasProtocol = url.indexOf('http://') === 0 || url.indexOf('https://') === 0;
+      var base = hasProtocol ? url : 'http://local.fake/' + url.replace(/^\//, '');
+      var parsed = new URL(base);
+
+      Object.keys(utms).forEach(function(k) {
+        if (!parsed.searchParams.has(k)) {
+          parsed.searchParams.set(k, utms[k]);
+        }
+      });
+
+      if (hasProtocol) {
+        return parsed.toString();
+      } else {
+        var cleanPath = parsed.pathname.replace(/^\/local\.fake\/?/, '').replace(/^\//, '');
+        var prefix = (url.indexOf('/') === 0) ? '/' : '';
+        return prefix + cleanPath + parsed.search + parsed.hash;
+      }
+    } catch(e) {
+      var sep = url.indexOf('?') === -1 ? '?' : '&';
+      var q = window.getPreservedUtmQuery(false);
+      return q ? (url + sep + q) : url;
+    }
+  };
+
+  function decorateLinks() {
+    try {
+      var links = document.querySelectorAll('a[href]');
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        var href = a.getAttribute('href');
+        if (href && (href.indexOf('.html') !== -1 || href === '/' || href.indexOf('?') !== -1)) {
+          if (href.indexOf('http') === -1 || href.indexOf(window.location.host) !== -1) {
+            a.setAttribute('href', window.appendUtms(href));
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', decorateLinks);
+  } else {
+    decorateLinks();
+  }
+  if (window.MutationObserver) {
+    document.addEventListener('DOMContentLoaded', function() {
+      new MutationObserver(decorateLinks).observe(document.body, { childList: true, subtree: true });
+    });
+  }
+})();
+</script>
+<!-- End UTM & Tracking Preservation System -->
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '3040652709472060');
+fbq('init', '1671642977776583');
+fbq('init', '1148570223701664');
+fbq('track', 'PageView');
+const urlParams = new URLSearchParams(window.location.search);
+const purchasePrice = urlParams.get("price") || "1199";
+const orderId = urlParams.get('order') || 'TAK-ORDER';
+fbq('track', 'Purchase', { value: purchasePrice, currency: 'ZAR' }, { eventID: orderId });
+</script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=3040652709472060&ev=PageView&noscript=1" />
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1671642977776583&ev=PageView&noscript=1" />
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1148570223701664&ev=PageView&noscript=1" />
+</noscript>
+<!-- End Meta Pixel Code -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed | Takealot</title>
+  <link rel="icon" type="image/svg+xml" href="imagens/takealot-logo.svg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  
+
+  <style>
+    :root {
+      --takealot-blue: #0b79bf;
+      --takealot-green: #168744;
+      --takealot-text: #222222;
+      --takealot-border: #e3e3e3;
+      --takealot-bg: #f4f4f4;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--takealot-bg);
+      color: var(--takealot-text);
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: #fff;
+      height: 54px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--takealot-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      height: 26px;
+      width: auto;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 16px auto;
+      padding: 0 14px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--takealot-border);
+      padding: 24px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .success-header {
+      text-align: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .check-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #eaf6ed;
+      color: var(--takealot-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 14px;
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 6px;
+    }
+
+    .success-subtitle {
+      font-size: 13.5px;
+      color: #666;
+    }
+
+    .order-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fbfbfb;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .order-num {
+      font-weight: 700;
+      color: var(--takealot-blue);
+    }
+
+    /* Tracking Steps */
+    .timeline {
+      margin: 20px 0 10px;
+      padding-left: 20px;
+      position: relative;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: #e0e0e0;
+    }
+    .timeline-step {
+      position: relative;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+    .timeline-step::before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+    .timeline-step.done::before {
+      background: var(--takealot-green);
+      box-shadow: 0 0 0 3px #eaf6ed;
+    }
+    .timeline-step.current::before {
+      background: var(--takealot-blue);
+      box-shadow: 0 0 0 3px #eef6fc;
+    }
+    .timeline-title {
+      font-weight: 700;
+      color: #222;
+    }
+    .timeline-desc {
+      font-size: 12px;
+      color: #777;
+    }
+
+    /* Product Review */
+    .product-row {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid #f0f0f0;
+    }
+    .product-row img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 6px;
+    }
+    .product-info {
+      flex: 1;
+    }
+    .product-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #222;
+      line-height: 1.35;
+      margin-bottom: 4px;
+    }
+    .product-price {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    /* Actions */
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background: var(--takealot-green);
+      color: #fff;
+      text-align: center;
+      padding: 14px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(22, 135, 68, 0.3);
+      transition: background 0.15s;
+      margin-top: 10px;
+    }
+    .btn-primary:hover {
+      background: #126e37;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <a href="index.html">
+      <img src="imagens/takealot-logo.svg" alt="Takealot" class="logo" />
+    </a>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="success-header">
+        <div class="check-circle">
+          <i class="fas fa-check"></i>
+        </div>
+        <h1 class="success-title">Order Confirmed!</h1>
+        <p class="success-subtitle">We've received your order and are getting it ready for delivery.</p>
+      </div>
+
+      <div class="order-badge-row">
+        <div>Order Number: <span class="order-num" id="order-id">TAK-847291</span></div>
+        <div style="color: var(--takealot-green); font-weight: 600;"><i class="fas fa-circle-check"></i> Paid</div>
+      </div>
+
+      <div style="font-size: 13.5px; color: #333; margin-bottom: 8px;">
+        <strong>Estimated Delivery:</strong>
+        <span style="color: var(--takealot-green); font-weight: 700;">Tomorrow, 7am - 7pm</span>
+      </div>
+
+      <div style="font-size: 13px; color: #555; margin-bottom: 16px;" id="recipient-details">
+        Delivering to: <strong id="rec-name">Valued Customer</strong><br>
+        <span id="rec-address">Cape Town, South Africa</span>
+      </div>
+
+      <!-- Live Tracking Timeline -->
+      <div style="font-size: 13px; font-weight: 700; color: #222; margin-top: 18px;">Order Status</div>
+      <div class="timeline">
+        <div class="timeline-step done">
+          <div class="timeline-title">Order Placed &amp; Paid</div>
+          <div class="timeline-desc">Payment confirmed via 3D Secure</div>
+        </div>
+        <div class="timeline-step current">
+          <div class="timeline-title">Packaging &amp; Dispatch</div>
+          <div class="timeline-desc">Item is being prepared at Takealot Warehouse</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-title">Out for Delivery</div>
+          <div class="timeline-desc">Takealot driver on the way</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-title">Delivered</div>
+          <div class="timeline-desc">Signed and completed</div>
+        </div>
+      </div>
+
+      <!-- Item Row -->
+      <div class="product-row">
+        <img id="item-img" src="imagens/samsung_washer_1_hero.jpg" alt="Samsung 9kg EcoBubble Front Loader Washing Machine" />
+        <div class="product-info">
+          <div class="product-title" id="item-title">Samsung 9kg EcoBubble™ Front Loader Washing Machine (WW90TA046AX)</div>
+          <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Qty: <strong id="item-qty-val" style="color: #222;">1</strong></div>
+          <div class="product-price">R <span id="item-price">--</span></div>
+        </div>
+      </div>
+
+      <a id="btn-track-order-link" href="track.html" onclick="if(window.appendUtms)this.href=window.appendUtms(this.href)" class="btn-primary" style="background: var(--takealot-blue); margin-bottom: 10px;">
+        <i class="fas fa-truck-fast" style="margin-right: 6px;"></i> Track This Order Live
+      </a>
+
+      <a href="index.html" class="btn-primary" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; box-shadow: none;">
+        <i class="fas fa-arrow-left" style="margin-right: 6px;"></i> Return to Store
+      </a>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const price = params.get("price") || "1299";
+      const qtyParam = params.get("qty") || "1";
+      const orderParam = params.get("order") || "";
+      if (orderParam) {
+        document.getElementById('order-id').textContent = orderParam;
+        const trackBtn = document.getElementById('btn-track-order-link');
+        if (trackBtn) trackBtn.href = `track.html?order=${encodeURIComponent(orderParam)}`;
+      }
+      const itemPriceEl = document.getElementById("item-price");
+      const itemQtyEl = document.getElementById("item-qty-val");
+      if (itemPriceEl) itemPriceEl.textContent = formatted;
+      if (itemQtyEl) itemQtyEl.textContent = qtyParam;
+
+      try {
+        const order = JSON.parse(localStorage.getItem('takealot_last_order'));
+        if (order) {
+          if (order.orderNumber) {
+            document.getElementById('order-id').textContent = order.orderNumber;
+            const trackBtn = document.getElementById('btn-track-order-link');
+            if (trackBtn) trackBtn.href = `track.html?order=${encodeURIComponent(order.orderNumber)}`;
+          }
+          if (order.recipientName) document.getElementById('rec-name').textContent = order.recipientName;
+          if (order.deliveryAddress) document.getElementById('rec-address').textContent = order.deliveryAddress;
+          if (order.product) document.getElementById('item-title').textContent = order.product;
+          if (order.image) document.getElementById('item-img').src = order.image;
+          if (order.quantity && itemQtyEl) itemQtyEl.textContent = order.quantity;
+          if (order.amount) {
+            const ordFormatted = parseInt(order.amount).toLocaleString("en-ZA");
+            if (itemPriceEl) itemPriceEl.textContent = ordFormatted;
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
+</body>
+
+</html>
